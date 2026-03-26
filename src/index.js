@@ -5,6 +5,7 @@ import AnswerSubmit from './modules/answerSubmit.js';
 import AnswerRecord from './modules/answerRecord.js';
 import ClientJoin from './modules/clientJoin.js';
 import AdminData from './modules/adminData.js';
+import Auth from './modules/auth.js';
 
 // CORS 响应头
 const corsHeaders = {
@@ -55,6 +56,11 @@ export default {
     const path = url.pathname;
     const method = request.method;
 
+    // 登录页面
+    if (path === '/login' || path === '/login.html') {
+      return env.ASSETS.fetch(new URL('/login.html', request.url));
+    }
+
     // 静态资源路由 - 从 public 目录提供
     if (path === '/' || path === '/client' || path === '/client.html') {
       return env.ASSETS.fetch(new URL('/client.html', request.url));
@@ -80,12 +86,19 @@ export default {
     const questionFetch = new QuestionFetch(questionUpload);
     const answerSubmit = new AnswerSubmit(questionUpload, answerRecord);
     const adminData = new AdminData(questionUpload, answerRecord, clientJoin);
+    const auth = new Auth(env);
 
     try {
       // ==================== 核心 API（精简版）====================
 
-      // 【聚合API】获取所有数据（题目、答题记录、统计）
+      // 【聚合API】获取所有数据（题目、答题记录、统计）- 需要鉴权
       if (path === '/api/data' && method === 'GET') {
+        // 验证管理员权限
+        const authResult = auth.verifyAdminKey(request);
+        if (!authResult.success) {
+          return jsonResponse(authResult, 401);
+        }
+
         const typeParam = url.searchParams.get('type') || 'all';
         const types = typeParam.split(',').map(t => t.trim());
         const isAll = types.includes('all');
@@ -155,8 +168,14 @@ export default {
         return jsonResponse(result);
       }
 
-      // 【轻量API】管理端首页专用（只返回必要数据）
+      // 【轻量API】管理端首页专用（只返回必要数据）- 需要鉴权
       if (path === '/api/admin/summary' && method === 'GET') {
+        // 验证管理员权限
+        const authResult = auth.verifyAdminKey(request);
+        if (!authResult.success) {
+          return jsonResponse(authResult, 401);
+        }
+
         const questions = await questionFetch.getQuestionList(100);
         const questionStats = await answerRecord.getQuestionStatistics();
         const stats = await answerRecord.getStatistics();
@@ -193,19 +212,27 @@ export default {
       if (path === '/api/action' && method === 'POST') {
         const body = await request.json();
         const action = body.action;
-        
+
+        // 管理操作需要鉴权
+        if (auth.isAdminAction(action)) {
+          const authResult = auth.verifyAdminKey(request);
+          if (!authResult.success) {
+            return jsonResponse(authResult, 401);
+          }
+        }
+
         switch (action) {
           case 'submitAnswer':
             return jsonResponse(await answerSubmit.submitAnswer(
-              body.questionId, 
-              body.answer, 
-              body.userId, 
+              body.questionId,
+              body.answer,
+              body.userId,
               body.nickname
             ));
-            
+
           case 'createQuestion':
             return jsonResponse(await questionUpload.uploadQuestion(body.data, body.force === true));
-            
+
           case 'deleteQuestion':
             if (body.id) {
               return jsonResponse(await questionUpload.deleteQuestion(body.id));
@@ -215,13 +242,13 @@ export default {
 
           case 'clearRecords':
             return jsonResponse(await answerRecord.clearAllRecords());
-            
+
           case 'clientJoin':
             return jsonResponse(await clientJoin.joinClient());
-            
+
           case 'clientLeave':
             return jsonResponse(await clientJoin.leaveClient(body.clientId));
-            
+
           default:
             return jsonResponse({ success: false, message: '未知操作' }, 400);
         }
@@ -263,23 +290,29 @@ export default {
         });
       }
 
-      // 【聚合API】导出数据
+      // 【聚合API】导出数据 - 需要鉴权
       if (path === '/api/export' && method === 'GET') {
+        // 验证管理员权限
+        const authResult = auth.verifyAdminKey(request);
+        if (!authResult.success) {
+          return jsonResponse(authResult, 401);
+        }
+
         const type = url.searchParams.get('type') || 'all';
-        
+
         let exportData = {
           exportTime: new Date().toISOString(),
           type: type
         };
-        
+
         if (type === 'questions' || type === 'all') {
           exportData.questions = await questionUpload.getAllQuestions();
         }
-        
+
         if (type === 'answers' || type === 'all') {
           exportData.answers = await answerRecord.getAllRecords();
         }
-        
+
         if (type === 'all') {
           const participants = await answerRecord.getParticipantStatistics();
           exportData.participants = participants;
@@ -289,8 +322,24 @@ export default {
             totalParticipants: participants.length
           };
         }
-        
+
         return jsonResponse({ success: true, data: exportData });
+      }
+
+      // 【登录API】验证 API Key
+      if (path === '/api/login' && method === 'POST') {
+        const body = await request.json();
+        const apiKey = body.apiKey;
+
+        if (!apiKey) {
+          return jsonResponse({ success: false, message: '请提供 API Key' }, 400);
+        }
+
+        if (apiKey !== env.ADMIN_API_KEY) {
+          return jsonResponse({ success: false, message: '无效的 API Key' }, 401);
+        }
+
+        return jsonResponse({ success: true, message: '登录成功' });
       }
 
       // 404 响应

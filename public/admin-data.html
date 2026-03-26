@@ -147,13 +147,21 @@
     </div>
 
     <script>
+        // 登录检查
+        const adminToken = localStorage.getItem('admin_token');
+        if (!adminToken) {
+            window.location.href = '/login?return=' + encodeURIComponent(window.location.pathname);
+        }
+
         let currentExportData = null;
         let currentExportFilename = '';
 
         // 加载数据概览
         async function loadOverview() {
             try {
-                const response = await fetch('/api/data?type=stats');
+                const response = await fetch('/api/data?type=stats', {
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                });
                 const result = await response.json();
                 if (result.success) {
                     document.getElementById('totalQuestions').textContent = result.data.stats.totalQuestions;
@@ -168,7 +176,9 @@
         // 加载题目列表
         async function loadQuestions() {
             try {
-                const response = await fetch('/api/data?type=questions');
+                const response = await fetch('/api/data?type=questions', {
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                });
                 const result = await response.json();
                 const container = document.getElementById('questionsContainer');
                 
@@ -216,7 +226,9 @@
         // 加载历史题目
         async function loadHistoryQuestions() {
             try {
-                const response = await fetch('/api/data?type=history');
+                const response = await fetch('/api/data?type=history', {
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                });
                 const result = await response.json();
                 const container = document.getElementById('historyContainer');
 
@@ -305,7 +317,9 @@
         // 导出题目
         async function exportQuestions() {
             try {
-                const response = await fetch('/api/export?type=questions');
+                const response = await fetch('/api/export?type=questions', {
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                });
                 const result = await response.json();
                 if (result.success) {
                     currentExportData = result.data;
@@ -322,7 +336,9 @@
         async function exportRecords() {
             try {
                 // 使用聚合导出API
-                const response = await fetch('/api/export?type=all');
+                const response = await fetch('/api/export?type=all', {
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                });
                 const result = await response.json();
                 
                 currentExportData = result.data;
@@ -337,7 +353,9 @@
         // 导出历史题目
         async function exportHistoryQuestions() {
             try {
-                const response = await fetch('/api/data?type=history');
+                const response = await fetch('/api/data?type=history', {
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                });
                 const result = await response.json();
                 if (result.success) {
                     const exportData = {
@@ -394,7 +412,10 @@
             try {
                 const response = await fetch('/api/action', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + adminToken
+                    },
                     body: JSON.stringify({ action: 'deleteQuestion' })
                 });
                 const result = await response.json();
@@ -417,7 +438,10 @@
             try {
                 const response = await fetch('/api/action', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + adminToken
+                    },
                     body: JSON.stringify({ action: 'clearRecords' })
                 });
                 const result = await response.json();

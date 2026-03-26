@@ -218,6 +218,12 @@
         </div>
     </div>
     <script>
+        // 登录检查
+        const adminToken = localStorage.getItem('admin_token');
+        if (!adminToken) {
+            window.location.href = '/login?return=' + encodeURIComponent(window.location.pathname);
+        }
+
         let selectedCorrectAnswer = null;
         let pendingQuestionData = null;
         
@@ -285,7 +291,10 @@
             try {
                 const response = await fetch('/api/action', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + adminToken
+                    },
                     body: JSON.stringify({
                         action: 'createQuestion',
                         data: questionData
@@ -316,7 +325,10 @@
                 try {
                     const response = await fetch('/api/action', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + adminToken
+                        },
                         body: JSON.stringify({
                             action: 'createQuestion',
                             data: { ...pendingQuestionData, force: true }
@@ -346,7 +358,10 @@
             try {
                 const response = await fetch('/api/action', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + adminToken
+                    },
                     body: JSON.stringify({ action: 'deleteQuestion' })
                 });
                 const result = await response.json();
@@ -376,7 +391,9 @@
         // 聚合加载所有数据（使用轻量级API）
         async function loadAllData() {
             try {
-                const response = await fetch('/api/admin/summary');
+                const response = await fetch('/api/admin/summary', {
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                });
                 const result = await response.json();
                 
                 if (result.success) {

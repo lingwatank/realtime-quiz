@@ -123,6 +123,12 @@
     </div>
 
     <script>
+        // 登录检查
+        const adminToken = localStorage.getItem('admin_token');
+        if (!adminToken) {
+            window.location.href = '/login?return=' + encodeURIComponent(window.location.pathname);
+        }
+
         let currentQuestions = [];
         let currentRecords = [];
         let selectedQuestionId = null;
@@ -130,7 +136,9 @@
         // 加载统计数据
         async function loadStats() {
             try {
-                const response = await fetch('/api/data?type=all,history');
+                const response = await fetch('/api/data?type=all,history', {
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                });
                 const result = await response.json();
 
                 if (result.success) {
@@ -263,7 +271,9 @@
             
             try {
                 // 使用聚合API获取题目详情（包含所有答题记录）
-                const response = await fetch(`/api/data?type=questions&questionId=${questionId}`);
+                const response = await fetch(`/api/data?type=questions&questionId=${questionId}`, {
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                });
                 const result = await response.json();
 
                 if (result.success && result.data.question) {
