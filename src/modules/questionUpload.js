@@ -152,21 +152,33 @@ export default class QuestionUpload {
     };
   }
 
-  // 删除所有题目
+  // 删除所有题目（包括当前题目和历史题目）
   async deleteAllQuestions() {
     await this.ensureInitialized();
-    
-    const count = this.questions.length;
-    this.questions = [];
-    
-    // 保存到 KV
-    await this.kvStore.saveQuestions(this.questions);
-    
-    return {
-      success: true,
-      deletedCount: count,
-      message: `已删除 ${count} 道题目`
-    };
+
+    const currentCount = this.questions.length;
+    const historyCount = this.questionHistory.length;
+
+    try {
+      // 清空当前题目
+      this.questions = [];
+      await this.kvStore.saveQuestions(this.questions);
+
+      // 清空历史题目
+      this.questionHistory = [];
+      await this.kvStore.saveQuestionHistory(this.questionHistory);
+
+      return {
+        success: true,
+        deletedCount: currentCount + historyCount,
+        message: `已删除 ${currentCount} 道当前题目和 ${historyCount} 道历史题目`
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: '删除题目失败: ' + error.message
+      };
+    }
   }
 
   // 更新题目统计

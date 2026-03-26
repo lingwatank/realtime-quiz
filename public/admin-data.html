@@ -56,8 +56,8 @@
             <h1>数据管理中心</h1>
         </div>
         <div class="nav-links">
-            <a href="/admin">返回管理端</a> | 
-            <a href="/admin-stats">详细统计</a> | 
+            <a href="/ctrl-panel">返回管理端</a> |
+            <a href="/stats-view">详细统计</a> |
             <a href="/client">进入客户端</a>
         </div>
 
@@ -373,8 +373,8 @@
         // 确认清空题目
         function confirmClearQuestions() {
             document.getElementById('confirmTitle').textContent = '确认清空所有题目';
-            document.getElementById('confirmMessage').innerHTML = 
-                '<div class="alert alert-danger">警告：此操作将删除所有题目数据，且不可恢复！</div>';
+            document.getElementById('confirmMessage').innerHTML =
+                '<div class="alert alert-danger">警告：此操作将删除所有当前题目和历史题目，且不可恢复！</div>';
             document.getElementById('confirmBtn').onclick = clearAllQuestions;
             document.getElementById('confirmModal').classList.add('show');
         }
@@ -399,9 +399,10 @@
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert('已清空所有题目');
+                    alert(result.message || '已清空所有题目');
                     loadOverview();
                     loadQuestions();
+                    loadHistoryQuestions();
                 } else {
                     alert('清空失败: ' + result.message);
                 }

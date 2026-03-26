@@ -152,7 +152,7 @@
                 <p>2. 直接点击 A/B/C/D 选择答案并提交（无需先获取题目）</p>
                 <p>3. 点击「获取最新题目」可查看当前题目详情和倒计时</p>
                 <p>4. 每道题目只能回答一次，提交后显示倒计时和正确答案</p>
-                <p>5. <a href="/admin">进入管理端</a> 可以添加新题目</p>
+                <p>5. 等待管理员推送新题目</p>
             </div>
         </div>
     </div>
@@ -284,6 +284,9 @@
                         setTimeout(() => {
                             document.getElementById('statusMessage').textContent = '请直接选择 A/B/C/D 答案并提交';
                             document.getElementById('statusMessage').className = 'status-message';
+                            const timerEl = document.getElementById('questionTimer');
+                            timerEl.textContent = '';
+                            timerEl.className = 'question-timer';
                         }, 3000);
                     } else {
                         // 题目未过期，显示题目到选项卡片
@@ -312,7 +315,7 @@
                         }
                     }
                 } else {
-                    statusMessage.textContent = '暂无题目，请先访问管理端添加题目';
+                    statusMessage.textContent = '暂无题目，请等待管理员推送题目';
                     clearQuestion();
                 }
             } catch (error) {
@@ -378,6 +381,9 @@
                     setTimeout(() => {
                         document.getElementById('statusMessage').textContent = '请直接选择 A/B/C/D 答案并提交';
                         document.getElementById('statusMessage').className = 'status-message';
+                        const timerEl = document.getElementById('questionTimer');
+                        timerEl.textContent = '';
+                        timerEl.className = 'question-timer';
                     }, 3000);
                     return;
                 }
@@ -448,7 +454,9 @@
                 option.classList.remove('selected', 'correct', 'incorrect', 'answered');
             });
             
-            document.getElementById('questionTimer').textContent = '';
+            const timerEl = document.getElementById('questionTimer');
+            timerEl.textContent = '';
+            timerEl.className = 'question-timer';
             hideCountdown();
             
             if (timerInterval) {
@@ -551,6 +559,11 @@
             const countdownDisplay = document.getElementById('countdownDisplay');
             countdownDisplay.style.display = 'none';
             countdownDisplay.textContent = '';
+
+            // 同时清理 questionTimer
+            const timerEl = document.getElementById('questionTimer');
+            timerEl.textContent = '';
+            timerEl.className = 'question-timer';
         }
         
         // 高亮答案（不禁用选项）

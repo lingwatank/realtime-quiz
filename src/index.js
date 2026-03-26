@@ -60,15 +60,16 @@ export default {
       return env.ASSETS.fetch(new URL('/client.html', request.url));
     }
 
-    if (path === '/admin' || path === '/admin.html') {
+    // 管理端路由 - 使用有意义但不易猜测的路径
+    if (path === '/ctrl-panel' || path === '/ctrl-panel.html') {
       return env.ASSETS.fetch(new URL('/admin.html', request.url));
     }
 
-    if (path === '/admin-data' || path === '/admin-data.html') {
+    if (path === '/data-mgmt' || path === '/data-mgmt.html') {
       return env.ASSETS.fetch(new URL('/admin-data.html', request.url));
     }
 
-    if (path === '/admin-stats' || path === '/admin-stats.html') {
+    if (path === '/stats-view' || path === '/stats-view.html') {
       return env.ASSETS.fetch(new URL('/admin-stats.html', request.url));
     }
 
