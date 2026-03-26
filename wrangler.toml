@@ -1,0 +1,22 @@
+name = "onlinexame"
+main = "src/index.js"
+compatibility_date = "2025-07-18"
+
+# KV 命名空间绑定
+[[kv_namespaces]]
+binding = "EXAM_KV"
+id = "exam_kv_namespace"
+preview_id = "exam_kv_namespace_preview"
+
+# 静态资源绑定 - Workers Assets
+[assets]
+binding = "ASSETS"
+directory = "./public"
+
+# 开发环境配置
+[env.dev]
+name = "onlinexame-dev"
+
+# 生产环境配置
+[env.production]
+name = "onlinexame"

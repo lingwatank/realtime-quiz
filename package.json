@@ -1,0 +1,22 @@
+{
+  "name": "onlinexame",
+  "version": "1.0.0",
+  "description": "在线答题系统 - Cloudflare Workers 项目",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "quiz",
+    "exam"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

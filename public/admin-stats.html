@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>详细统计 - 答题系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; color: #333; line-height: 1.6; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; padding-top: 20px; }
+        .header h1 { font-size: 28px; font-weight: 600; color: #2c3e50; }
+        .nav-links { text-align: center; margin-bottom: 20px; }
+        .nav-links a { color: #3498db; text-decoration: none; margin: 0 10px; }
+        .section { background-color: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .section-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: #2c3e50; }
+        .question-list { display: grid; gap: 15px; }
+        .question-card { background-color: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #3498db; cursor: pointer; transition: all 0.3s ease; }
+        .question-card:hover { background-color: #e9ecef; transform: translateX(5px); }
+        .question-card.active { border-left-color: #27ae60; background-color: #e8f5e9; }
+        .question-card.expired { border-left-color: #95a5a6; }
+        .question-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .question-id { font-size: 12px; color: #7f8c8d; background-color: #ecf0f1; padding: 4px 8px; border-radius: 4px; }
+        .question-status { font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: 500; }
+        .question-status.active { background-color: #d4edda; color: #155724; }
+        .question-status.expired { background-color: #e9ecef; color: #6c757d; }
+        .question-text { font-size: 16px; color: #2c3e50; font-weight: 500; margin-bottom: 15px; line-height: 1.5; }
+        .question-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .question-stat { background-color: white; border-radius: 8px; padding: 12px; text-align: center; }
+        .question-stat-value { font-size: 20px; font-weight: 700; color: #3498db; }
+        .question-stat-label { font-size: 11px; color: #7f8c8d; margin-top: 4px; }
+        .detail-section { background-color: white; border-radius: 12px; padding: 20px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .detail-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #2c3e50; display: flex; justify-content: space-between; align-items: center; }
+        .detail-content { display: none; }
+        .detail-content.show { display: block; }
+        .empty-state { text-align: center; padding: 40px; color: #7f8c8d; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        .data-table th { background-color: #f8f9fa; font-weight: 600; color: #2c3e50; }
+        .data-table tr:hover { background-color: #f8f9fa; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+        .badge-success { background-color: #d4edda; color: #155724; }
+        .badge-danger { background-color: #f8d7da; color: #721c24; }
+        .correct-answer { color: #27ae60; font-weight: 600; }
+        .user-answer { font-weight: 600; }
+        .user-answer.correct { color: #27ae60; }
+        .user-answer.incorrect { color: #e74c3c; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-primary:hover { background-color: #2980b9; }
+        .btn-success { background-color: #27ae60; color: white; }
+        .btn-success:hover { background-color: #219a52; }
+        .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .summary-card { background-color: #f8f9fa; border-radius: 8px; padding: 15px; text-align: center; }
+        .summary-value { font-size: 24px; font-weight: 700; color: #3498db; }
+        .summary-label { font-size: 12px; color: #7f8c8d; margin-top: 5px; }
+        .options-list { display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
+        .option-tag { background-color: #e9ecef; padding: 6px 12px; border-radius: 6px; font-size: 14px; }
+        .option-tag.correct { background-color: #d4edda; color: #155724; font-weight: 600; }
+        @media (max-width: 768px) { .container { padding: 15px; } .question-stats { grid-template-columns: 1fr; } .stats-summary { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>详细统计分析</h1>
+        </div>
+        <div class="nav-links">
+            <a href="/admin">返回管理端</a> | 
+            <a href="/admin-data">数据管理</a> | 
+            <a href="/client">进入客户端</a>
+        </div>
+
+        <!-- 统计概览 -->
+        <div class="section">
+            <div class="section-title">统计概览</div>
+            <div class="stats-summary" id="statsSummary">
+                <div class="summary-card">
+                    <div class="summary-value" id="totalQuestions">-</div>
+                    <div class="summary-label">题目总数</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" id="totalSubmissions">-</div>
+                    <div class="summary-label">总答题次数</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" id="avgCorrectRate">-</div>
+                    <div class="summary-label">平均正确率</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" id="activeQuestions">-</div>
+                    <div class="summary-label">进行中题目</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 当前题目 -->
+        <div class="section">
+            <div class="section-title">当前题目（点击展开详情）</div>
+            <div class="question-list" id="questionList">
+                <div class="empty-state">加载中...</div>
+            </div>
+        </div>
+
+        <!-- 历史题目 -->
+        <div class="section">
+            <div class="section-title">历史题目（点击展开详情）</div>
+            <div class="question-list" id="historyList">
+                <div class="empty-state">加载中...</div>
+            </div>
+        </div>
+
+        <!-- 选中题目的详细记录 -->
+        <div class="detail-section" id="detailSection" style="display: none;">
+            <div class="detail-title">
+                <span>答题详情记录</span>
+                <button class="btn btn-success" onclick="exportCurrentDetail()">导出当前记录</button>
+            </div>
+            <div class="detail-content show" id="detailContent">
+                <div class="empty-state">请选择一道题目查看详情</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestions = [];
+        let currentRecords = [];
+        let selectedQuestionId = null;
+
+        // 加载统计数据
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/data?type=all,history');
+                const result = await response.json();
+
+                if (result.success) {
+                    const data = result.data;
+                    document.getElementById('totalQuestions').textContent = data.stats.totalQuestions;
+                    document.getElementById('totalSubmissions').textContent = data.stats.totalSubmissions;
+                    document.getElementById('avgCorrectRate').textContent = data.stats.correctRate;
+
+                    const activeCount = data.questions.filter(q => !q.expired).length;
+                    document.getElementById('activeQuestions').textContent = activeCount;
+
+                    currentQuestions = data.questions;
+                    renderQuestionList(data.questions);
+
+                    // 渲染历史题目
+                    if (data.questionHistory) {
+                        renderHistoryList(data.questionHistory);
+                    }
+                }
+            } catch (error) {
+                console.error('加载统计失败:', error);
+            }
+        }
+
+        // 渲染题目列表
+        function renderQuestionList(questions) {
+            const container = document.getElementById('questionList');
+            
+            if (questions.length === 0) {
+                container.innerHTML = '<div class="empty-state">暂无题目数据</div>';
+                return;
+            }
+            
+            container.innerHTML = questions.map(q => {
+                const isExpired = q.expired;
+                const statusClass = isExpired ? 'expired' : 'active';
+                const statusText = isExpired ? '已结束' : '进行中';
+                const correctRate = q.totalSubmissions > 0 
+                    ? ((q.correctCount / q.totalSubmissions) * 100).toFixed(1) + '%' 
+                    : '0.0%';
+                
+                return `
+                    <div class="question-card ${statusClass}" onclick="selectQuestion(${q.id})" data-question-id="${q.id}">
+                        <div class="question-header">
+                            <span class="question-id">题目 #${q.id}</span>
+                            <span class="question-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="question-text">${q.text}</div>
+                        <div class="options-list">
+                            ${q.options ? q.options.map(opt => 
+                                `<span class="option-tag ${opt.letter === q.correctAnswer ? 'correct' : ''}">${opt.letter}. ${opt.text}</span>`
+                            ).join('') : ''}
+                        </div>
+                        <div class="question-stats">
+                            <div class="question-stat">
+                                <div class="question-stat-value">${q.totalSubmissions || 0}</div>
+                                <div class="question-stat-label">答题人数</div>
+                            </div>
+                            <div class="question-stat">
+                                <div class="question-stat-value">${q.correctCount || 0}</div>
+                                <div class="question-stat-label">答对人数</div>
+                            </div>
+                            <div class="question-stat">
+                                <div class="question-stat-value">${correctRate}</div>
+                                <div class="question-stat-label">正确率</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 渲染历史题目列表
+        function renderHistoryList(history) {
+            const container = document.getElementById('historyList');
+
+            if (history.length === 0) {
+                container.innerHTML = '<div class="empty-state">暂无历史题目</div>';
+                return;
+            }
+
+            container.innerHTML = history.map(q => {
+                const correctRate = q.totalSubmissions > 0
+                    ? ((q.correctCount / q.totalSubmissions) * 100).toFixed(1) + '%'
+                    : '0.0%';
+
+                return `
+                    <div class="question-card expired" onclick="selectQuestion(${q.id})" data-question-id="${q.id}">
+                        <div class="question-header">
+                            <span class="question-id">题目 #${q.id}</span>
+                            <span class="question-status expired">已结束</span>
+                        </div>
+                        <div class="question-text">${q.text}</div>
+                        <div class="options-list">
+                            ${q.options ? q.options.map(opt =>
+                                `<span class="option-tag ${opt.letter === q.correctAnswer ? 'correct' : ''}">${opt.letter}. ${opt.text}</span>`
+                            ).join('') : ''}
+                        </div>
+                        <div class="question-stats">
+                            <div class="question-stat">
+                                <div class="question-stat-value">${q.totalSubmissions || 0}</div>
+                                <div class="question-stat-label">答题人数</div>
+                            </div>
+                            <div class="question-stat">
+                                <div class="question-stat-value">${q.correctCount || 0}</div>
+                                <div class="question-stat-label">答对人数</div>
+                            </div>
+                            <div class="question-stat">
+                                <div class="question-stat-value">${correctRate}</div>
+                                <div class="question-stat-label">正确率</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 选择题目查看详情
+        async function selectQuestion(questionId) {
+            selectedQuestionId = questionId;
+            
+            // 高亮选中的题目
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.style.backgroundColor = card.dataset.questionId == questionId ? '#e3f2fd' : '';
+            });
+            
+            // 显示详情区域
+            document.getElementById('detailSection').style.display = 'block';
+            document.getElementById('detailContent').innerHTML = '<div class="empty-state">加载中...</div>';
+            
+            try {
+                // 使用聚合API获取题目详情（包含所有答题记录）
+                const response = await fetch(`/api/data?type=questions&questionId=${questionId}`);
+                const result = await response.json();
+
+                if (result.success && result.data.question) {
+                    currentRecords = result.data.question.records || [];
+
+                    // 按时间排序
+                    currentRecords.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+                    renderDetailTable(currentRecords);
+                } else {
+                    document.getElementById('detailContent').innerHTML = '<div class="empty-state">暂无该题目的答题记录</div>';
+                }
+            } catch (error) {
+                document.getElementById('detailContent').innerHTML = '<div class="empty-state">加载失败: ' + error.message + '</div>';
+            }
+        }
+
+        // 渲染详情表格
+        function renderDetailTable(records) {
+            const container = document.getElementById('detailContent');
+            
+            if (records.length === 0) {
+                container.innerHTML = '<div class="empty-state">暂无答题记录</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>用户昵称</th>
+                            <th>提交答案</th>
+                            <th>是否正确</th>
+                            <th>提交时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${records.map((r, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${r.nickname}</td>
+                                <td class="user-answer ${r.isCorrect ? 'correct' : 'incorrect'}">${r.userAnswer}</td>
+                                <td>
+                                    ${r.isCorrect 
+                                        ? '<span class="badge badge-success">正确</span>' 
+                                        : '<span class="badge badge-danger">错误</span>'}
+                                </td>
+                                <td>${new Date(r.submittedAt).toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // 导出当前题目详情
+        function exportCurrentDetail() {
+            if (!selectedQuestionId || currentRecords.length === 0) {
+                alert('没有可导出的数据');
+                return;
+            }
+            
+            const question = currentQuestions.find(q => q.id === selectedQuestionId);
+            const exportData = {
+                exportTime: new Date().toISOString(),
+                question: question,
+                records: currentRecords,
+                summary: {
+                    totalSubmissions: currentRecords.length,
+                    correctCount: currentRecords.filter(r => r.isCorrect).length,
+                    correctRate: ((currentRecords.filter(r => r.isCorrect).length / currentRecords.length) * 100).toFixed(1) + '%'
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `question_${selectedQuestionId}_records_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 初始化
+        loadStats();
+    </script>
+</body>
+</html>

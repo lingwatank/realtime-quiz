@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>答题客户端</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; color: #333; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; padding-top: 20px; }
+        .header h1 { font-size: 24px; font-weight: 600; color: #2c3e50; }
+        .user-section { background-color: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .user-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #2c3e50; }
+        .user-input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease; }
+        .user-input:focus { outline: none; border-color: #3498db; }
+        .user-info { display: flex; justify-content: space-between; align-items: center; }
+        .user-name { font-size: 16px; color: #2c3e50; font-weight: 500; }
+        .user-id { font-size: 12px; color: #7f8c8d; }
+        .edit-btn { padding: 6px 12px; background-color: #3498db; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; }
+        .question-section { background-color: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .question-title { font-size: 18px; font-weight: 500; margin-bottom: 20px; line-height: 1.5; min-height: 60px; display: flex; align-items: center; justify-content: center; text-align: center; color: #95a5a6; }
+        .question-title.empty { color: #95a5a6; }
+        .question-title.has-question { color: #2c3e50; text-align: left; justify-content: flex-start; }
+        .question-timer { font-size: 14px; color: #e74c3c; margin-bottom: 15px; font-weight: 500; text-align: center; }
+        .question-timer.expired { color: #95a5a6; }
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option { display: flex; align-items: center; padding: 15px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; min-height: 50px; display: flex; align-items: center; }
+        .option:hover { border-color: #3498db; background-color: #f8f9fa; }
+        .option.selected { border-color: #3498db; background-color: #e3f2fd; }
+        .option.answered { opacity: 0.7; }
+        .option.correct { border-color: #27ae60; background-color: #e8f5e9; }
+        .option.incorrect { border-color: #e74c3c; background-color: #ffebee; }
+        .option .option-letter { width: 30px; height: 30px; border-radius: 50%; background-color: #e0e0e0; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: 600; color: #555; }
+        .option.selected .option-letter { background-color: #3498db; color: white; }
+        .option.correct .option-letter { background-color: #27ae60; color: white; }
+        .option.incorrect .option-letter { background-color: #e74c3c; color: white; }
+        .option .option-text { flex: 1; font-size: 16px; color: #333; }
+        .action-section { display: flex; gap: 10px; margin-bottom: 20px; }
+        .action-btn { flex: 1; padding: 16px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background-color 0.3s ease; }
+        .fetch-btn { background-color: #27ae60; color: white; }
+        .fetch-btn:hover { background-color: #219a52; }
+        .submit-btn { background-color: #3498db; color: white; }
+        .submit-btn:hover { background-color: #2980b9; }
+        .submit-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        .action-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        .status-section { background-color: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin-bottom: 20px; }
+        .instructions-section { background-color: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .instructions-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #2c3e50; }
+        .instructions-content { font-size: 14px; color: #7f8c8d; line-height: 1.6; }
+        .status-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #2c3e50; }
+        .status-message { font-size: 14px; color: #7f8c8d; min-height: 40px; display: flex; align-items: center; }
+        .status-message.correct { color: #27ae60; font-weight: 500; }
+        .status-message.incorrect { color: #e74c3c; font-weight: 500; }
+        .status-message.warning { color: #f39c12; font-weight: 500; }
+        .status-message.info { color: #3498db; font-weight: 500; }
+        
+        /* 结果展示 - 常驻卡片 */
+        .result-section { background-color: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin-bottom: 20px; display: block; }
+        .result-section.empty { opacity: 0.6; }
+        .result-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #2c3e50; }
+        .result-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0; }
+        .result-item:last-child { border-bottom: none; }
+        .result-label { color: #7f8c8d; }
+        .result-value { font-weight: 600; }
+        .result-value.correct { color: #27ae60; }
+        .result-value.incorrect { color: #e74c3c; }
+        
+        /* 倒计时显示 */
+        .countdown-display { font-size: 48px; font-weight: 700; color: #3498db; text-align: center; margin: 20px 0; }
+        .countdown-display.expired { color: #95a5a6; }
+        
+        @media (max-width: 480px) { .container { padding: 15px; } .header h1 { font-size: 20px; } .question-title { font-size: 16px; } .option { padding: 12px; } .option .option-text { font-size: 14px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"><h1>答题系统</h1></div>
+        
+        <!-- 用户信息区域 -->
+        <div class="user-section" id="userSection">
+            <div class="user-title">参与者信息</div>
+            <div id="userInputArea">
+                <input type="text" class="user-input" id="nicknameInput" placeholder="请输入您的昵称" maxlength="20">
+            </div>
+            <div id="userDisplayArea" style="display: none;">
+                <div class="user-info">
+                    <div>
+                        <div class="user-name" id="displayNickname">匿名用户</div>
+                        <div class="user-id" id="displayUserId">ID: </div>
+                    </div>
+                    <button class="edit-btn" onclick="editNickname()">修改</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="question-section">
+            <div class="question-timer" id="questionTimer"></div>
+            <div class="countdown-display" id="countdownDisplay" style="display: none;"></div>
+            <div class="options" id="optionsContainer">
+                <div class="option" data-option="A">
+                    <div class="option-letter">A</div>
+                    <div class="option-text">选项 A</div>
+                </div>
+                <div class="option" data-option="B">
+                    <div class="option-letter">B</div>
+                    <div class="option-text">选项 B</div>
+                </div>
+                <div class="option" data-option="C">
+                    <div class="option-letter">C</div>
+                    <div class="option-text">选项 C</div>
+                </div>
+                <div class="option" data-option="D">
+                    <div class="option-letter">D</div>
+                    <div class="option-text">选项 D</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-section">
+            <button class="action-btn fetch-btn" id="fetchBtn">获取最新题目</button>
+            <button class="action-btn submit-btn" id="submitBtn">提交答案</button>
+        </div>
+        
+        <!-- 题目信息卡片 - 包含当前题目和答题结果 -->
+        <div class="result-section" id="questionInfoSection">
+            <div class="result-title" id="questionInfoTitle">上一题目</div>
+            <div class="result-item">
+                <span class="result-value" id="currentQuestionText" style="width: 100%; text-align: center; font-weight: 500; color: #2c3e50;">暂无题目</span>
+            </div>
+            <div class="result-item" id="answerResultRow" style="display: none;">
+                <span class="result-label">您的答案</span>
+                <span class="result-value" id="resultUserAnswer">-</span>
+            </div>
+            <div class="result-item" id="correctAnswerRow" style="display: none;">
+                <span class="result-label">正确答案</span>
+                <span class="result-value" id="resultCorrectAnswer">-</span>
+            </div>
+            <div class="result-item" id="answerStatusRow" style="display: none;">
+                <span class="result-label">答题结果</span>
+                <span class="result-value" id="resultStatus">-</span>
+            </div>
+        </div>
+        <div class="status-section">
+            <div class="status-title">状态</div>
+            <div class="status-message" id="statusMessage">请直接选择 A/B/C/D 答案并提交</div>
+        </div>
+        <div class="instructions-section">
+            <div class="instructions-title">使用说明</div>
+            <div class="instructions-content">
+                <p>1. 输入您的昵称（可选，默认为匿名用户）</p>
+                <p>2. 直接点击 A/B/C/D 选择答案并提交（无需先获取题目）</p>
+                <p>3. 点击「获取最新题目」可查看当前题目详情和倒计时</p>
+                <p>4. 每道题目只能回答一次，提交后显示倒计时和正确答案</p>
+                <p>5. <a href="/admin">进入管理端</a> 可以添加新题目</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        let selectedOption = null;
+        let currentQuestion = null;
+        let timerInterval = null;
+        let countdownInterval = null;
+        let userId = null;
+        let nickname = null;
+        let isSubmitting = false;
+        let hasAnsweredCurrentQuestion = false;
+        let lastSubmitTime = 0;
+        const SUBMIT_COOLDOWN = 700; // 0.7秒冷却时间
+        
+        // 生成或获取用户ID
+        function initUser() {
+            userId = localStorage.getItem('exam_user_id');
+            if (!userId) {
+                userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('exam_user_id', userId);
+            }
+            
+            nickname = localStorage.getItem('exam_nickname');
+            if (nickname) {
+                document.getElementById('nicknameInput').value = nickname;
+                showUserDisplay();
+            }
+            
+            document.getElementById('displayUserId').textContent = 'ID: ' + userId;
+        }
+        
+        function showUserDisplay() {
+            nickname = document.getElementById('nicknameInput').value.trim() || '匿名用户';
+            localStorage.setItem('exam_nickname', nickname);
+            document.getElementById('displayNickname').textContent = nickname;
+            document.getElementById('userInputArea').style.display = 'none';
+            document.getElementById('userDisplayArea').style.display = 'block';
+        }
+        
+        function editNickname() {
+            document.getElementById('userInputArea').style.display = 'block';
+            document.getElementById('userDisplayArea').style.display = 'none';
+            document.getElementById('nicknameInput').focus();
+        }
+        
+        // 昵称输入回车保存
+        document.getElementById('nicknameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                showUserDisplay();
+            }
+        });
+        
+        // 选项按钮点击事件
+        document.querySelectorAll('.option').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 如果已经回答过，仍然可以选择但不提交
+                if (hasAnsweredCurrentQuestion) {
+                    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedOption = this.dataset.option;
+                    document.getElementById('statusMessage').textContent = '已选择选项 ' + selectedOption + '（已回答过此题）';
+                    document.getElementById('statusMessage').className = 'status-message info';
+                    return;
+                }
+                
+                document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedOption = this.dataset.option;
+                document.getElementById('statusMessage').textContent = '已选择选项 ' + selectedOption;
+                document.getElementById('statusMessage').className = 'status-message';
+            });
+        });
+        
+        document.getElementById('fetchBtn').addEventListener('click', async function() {
+            const statusMessage = document.getElementById('statusMessage');
+            const timerElement = document.getElementById('questionTimer');
+            statusMessage.textContent = '正在获取最新题目...';
+            statusMessage.className = 'status-message';
+            timerElement.textContent = '';
+            
+            // 隐藏倒计时，保留上一题答题结果
+            hideCountdown();
+            
+            // 清除所有选项的高亮样式，避免影响下次答题
+            document.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'answered'));
+            selectedOption = null;
+            
+            // 重置答题状态，允许回答新题目
+            hasAnsweredCurrentQuestion = false;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            
+            try {
+                const response = await fetch('/api/latest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId })
+                });
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.question) {
+                    const question = result.data.question;
+                    const answerStatus = result.data.answerStatus;
+                    currentQuestion = question;
+
+                    hasAnsweredCurrentQuestion = answerStatus && answerStatus.hasAnswered;
+
+                    if (isQuestionExpired(question)) {
+                        statusMessage.textContent = '该题目已过期，无法提交答案';
+                        statusMessage.className = 'status-message warning';
+                        // 题目已过期，不修改选项卡片，只在结果区域显示
+                        if (answerStatus && answerStatus.hasAnswered) {
+                            // 用户已回答，显示用户的答案
+                            showResultSection(answerStatus.answer, question.correctAnswer, answerStatus.isCorrect, question);
+                        } else {
+                            // 用户未回答，显示未回答
+                            showResultSection('未回答', question.correctAnswer, false, question);
+                        }
+
+                        // 3秒后自动清除题目状态（保留上一题答题结果）
+                        setTimeout(() => {
+                            document.getElementById('statusMessage').textContent = '请直接选择 A/B/C/D 答案并提交';
+                            document.getElementById('statusMessage').className = 'status-message';
+                        }, 3000);
+                    } else {
+                        // 题目未过期，显示题目到选项卡片
+                        displayQuestion(question);
+
+                        if (answerStatus && answerStatus.hasAnswered) {
+                            // 已经回答过，但倒计时未结束
+                            statusMessage.textContent = '您已经回答过这道题目了，等待倒计时结束查看答案';
+                            statusMessage.className = 'status-message info';
+                            selectedOption = null;
+                            document.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'answered'));
+
+                            // 启动倒计时显示，倒计时结束后显示答案
+                            if (question.expiresAt) {
+                                startCountdown(question.expiresAt, answerStatus.answer, question.correctAnswer, answerStatus.isCorrect);
+                            }
+                        } else {
+                            statusMessage.textContent = '已获取最新题目，请选择答案';
+                            statusMessage.className = 'status-message';
+                            selectedOption = null;
+                            document.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'answered'));
+
+                            if (question.expiresAt) {
+                                startTimer(question.expiresAt);
+                            }
+                        }
+                    }
+                } else {
+                    statusMessage.textContent = '暂无题目，请先访问管理端添加题目';
+                    clearQuestion();
+                }
+            } catch (error) {
+                statusMessage.textContent = '获取题目失败: ' + error.message;
+                clearQuestion();
+            }
+        });
+        
+        document.getElementById('submitBtn').addEventListener('click', async function() {
+            // 检查提交冷却时间
+            const now = Date.now();
+            if (now - lastSubmitTime < SUBMIT_COOLDOWN) {
+                document.getElementById('statusMessage').textContent = '请稍后再提交';
+                document.getElementById('statusMessage').className = 'status-message warning';
+                return;
+            }
+            
+            if (!selectedOption) {
+                document.getElementById('statusMessage').textContent = '请先选择一个选项';
+                return;
+            }
+            
+            // 防止重复提交
+            if (isSubmitting) {
+                return;
+            }
+            
+            // 确保有昵称
+            if (!nickname) {
+                nickname = document.getElementById('nicknameInput').value.trim() || '匿名用户';
+                localStorage.setItem('exam_nickname', nickname);
+                showUserDisplay();
+            }
+            
+            // 设置提交中状态
+            isSubmitting = true;
+            lastSubmitTime = now;
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'submitAnswer',
+                        answer: selectedOption,
+                        userId: userId,
+                        nickname: nickname
+                    })
+                });
+                const result = await response.json();
+                
+                const statusMessage = document.getElementById('statusMessage');
+                
+                // 处理题目过期情况
+                if (result.expired) {
+                    statusMessage.textContent = result.message;
+                    statusMessage.className = 'status-message warning';
+                    // 题目已过期，不更新结果卡片
+
+                    // 3秒后自动清除题目状态
+                    setTimeout(() => {
+                        document.getElementById('statusMessage').textContent = '请直接选择 A/B/C/D 答案并提交';
+                        document.getElementById('statusMessage').className = 'status-message';
+                    }, 3000);
+                    return;
+                }
+
+                // 处理题目过期但用户已回答的情况
+                if (result.alreadyAnswered && result.expired) {
+                    statusMessage.textContent = '您已经回答过这道题目了（题目已过期）';
+                    statusMessage.className = 'status-message info';
+                    // 题目已过期，不更新结果卡片
+                    return;
+                }
+                
+                // 处理其他错误情况
+                if (!result.success && !result.alreadyAnswered) {
+                    statusMessage.textContent = result.message || '提交失败';
+                    statusMessage.className = 'status-message warning';
+                    return;
+                }
+                
+                // 统一处理成功和已回答的情况
+                hasAnsweredCurrentQuestion = true;
+                const userAnswer = result.success ? selectedOption : result.previousAnswer.answer;
+                const isCorrect = result.success ? result.isCorrect : result.previousAnswer.isCorrect;
+
+                // 显示提交状态（不透露是否正确）
+                statusMessage.textContent = '已提交，等待倒计时结束查看答案';
+                statusMessage.className = 'status-message info';
+
+                // 统一处理答案显示（倒计时结束后显示）
+                if (result.expiredAt) {
+                    startCountdown(result.expiredAt, userAnswer, result.correctAnswer, isCorrect);
+                } else {
+                    // 无时间限制，直接显示答案（不调动选项卡片）
+                    showResultSection(userAnswer, result.correctAnswer, isCorrect);
+                }
+            } catch (error) {
+                document.getElementById('statusMessage').textContent = '提交失败: ' + error.message;
+                document.getElementById('statusMessage').className = 'status-message warning';
+            } finally {
+                // 恢复按钮状态（0.7秒后）
+                setTimeout(() => {
+                    isSubmitting = false;
+                    submitBtn.disabled = false;
+                }, SUBMIT_COOLDOWN);
+            }
+        });
+        
+        function displayQuestion(question) {
+            // 更新当前题目卡片（显示完整题目）
+            document.getElementById('currentQuestionText').textContent = question.text;
+            
+            const options = document.querySelectorAll('.option');
+            question.options.forEach((opt, index) => {
+                if (options[index]) {
+                    options[index].querySelector('.option-text').textContent = opt.text;
+                }
+            });
+        }
+        
+        function clearQuestion() {
+            // 清空当前题目卡片
+            document.getElementById('currentQuestionText').textContent = '暂无题目';
+            
+            const options = document.querySelectorAll('.option');
+            const optionTexts = ['选项 A', '选项 B', '选项 C', '选项 D'];
+            options.forEach((option, index) => {
+                option.querySelector('.option-text').textContent = optionTexts[index];
+                option.classList.remove('selected', 'correct', 'incorrect', 'answered');
+            });
+            
+            document.getElementById('questionTimer').textContent = '';
+            hideCountdown();
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            
+            selectedOption = null;
+            currentQuestion = null;
+            hasAnsweredCurrentQuestion = false;
+        }
+        
+        function isQuestionExpired(question) {
+            if (!question.expiresAt) return false;
+            const now = new Date().getTime();
+            const expireTime = new Date(question.expiresAt).getTime();
+            return now > expireTime;
+        }
+        
+        function startTimer(expiresAt) {
+            const timerElement = document.getElementById('questionTimer');
+            
+            function updateTimer() {
+                const now = new Date().getTime();
+                const expireTime = new Date(expiresAt).getTime();
+                const remaining = expireTime - now;
+                
+                if (remaining <= 0) {
+                    timerElement.textContent = '题目已过期';
+                    timerElement.className = 'question-timer expired';
+                    
+                    if (timerInterval) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                    }
+                    return;
+                }
+                
+                // 显示秒级倒计时
+                const seconds = Math.ceil(remaining / 1000);
+                timerElement.textContent = '剩余时间: ' + seconds + '秒';
+                timerElement.className = 'question-timer';
+            }
+            
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 100);
+        }
+        
+        // 答题后的倒计时显示（大字体）- 倒计时结束后显示答案
+        function startCountdown(expiresAt, userAnswer, correctAnswer, isCorrect) {
+            const countdownDisplay = document.getElementById('countdownDisplay');
+            countdownDisplay.style.display = 'block';
+
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const expireTime = new Date(expiresAt).getTime();
+                const remaining = expireTime - now;
+
+                if (remaining <= 0) {
+                    countdownDisplay.textContent = '0';
+                    countdownDisplay.className = 'countdown-display expired';
+
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
+
+                    // 倒计时结束，显示答案（不调动选项卡片）
+                    if (userAnswer && correctAnswer) {
+                        showResultSection(userAnswer, correctAnswer, isCorrect);
+                        
+                        // 3秒后自动清除答案显示
+                        setTimeout(() => {
+                            hideCountdown();
+                            document.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'answered'));
+                            document.getElementById('statusMessage').textContent = '请直接选择 A/B/C/D 答案并提交';
+                            document.getElementById('statusMessage').className = 'status-message';
+                            hasAnsweredCurrentQuestion = false;
+                            selectedOption = null;
+                        }, 3000);
+                    }
+                    return;
+                }
+                
+                // 显示剩余秒数
+                const seconds = Math.ceil(remaining / 1000);
+                countdownDisplay.textContent = seconds;
+                countdownDisplay.className = 'countdown-display';
+            }
+            
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 100);
+        }
+        
+        function hideCountdown() {
+            const countdownDisplay = document.getElementById('countdownDisplay');
+            countdownDisplay.style.display = 'none';
+            countdownDisplay.textContent = '';
+        }
+        
+        // 高亮答案（不禁用选项）
+        function highlightAnswer(userAnswer, correctAnswer) {
+            document.querySelectorAll('.option').forEach(opt => {
+                const optionLetter = opt.dataset.option;
+                opt.classList.add('answered');
+                
+                if (optionLetter === correctAnswer) {
+                    opt.classList.add('correct');
+                } else if (optionLetter === userAnswer && userAnswer !== correctAnswer) {
+                    opt.classList.add('incorrect');
+                }
+            });
+        }
+        
+        // 显示正确答案（题目过期时）
+        function showCorrectAnswer(correctAnswer) {
+            document.querySelectorAll('.option').forEach(opt => {
+                const optionLetter = opt.dataset.option;
+                if (optionLetter === correctAnswer) {
+                    opt.classList.add('correct');
+                }
+            });
+        }
+        
+        // 显示答题结果（展开答题结果行）
+        function showResultSection(userAnswer, correctAnswer, isCorrect, question = null) {
+            // 显示答题结果行
+            document.getElementById('answerResultRow').style.display = 'flex';
+            document.getElementById('correctAnswerRow').style.display = 'flex';
+            document.getElementById('answerStatusRow').style.display = 'flex';
+
+            // 更新标题
+            document.getElementById('questionInfoTitle').textContent = '答题结果';
+
+            // 如果有题目信息，显示题目和选项
+            if (question) {
+                let questionText = question.text;
+                if (question.options && question.options.length > 0) {
+                    questionText += '\n\n选项：';
+                    question.options.forEach(opt => {
+                        questionText += '\n' + opt.letter + '. ' + opt.text;
+                    });
+                }
+                document.getElementById('currentQuestionText').textContent = questionText;
+            }
+
+            // 更新内容
+            document.getElementById('resultUserAnswer').textContent = userAnswer;
+            document.getElementById('resultCorrectAnswer').textContent = correctAnswer;
+
+            const statusEl = document.getElementById('resultStatus');
+            if (userAnswer === '未回答') {
+                statusEl.textContent = '未回答';
+                statusEl.className = 'result-value';
+            } else if (isCorrect) {
+                statusEl.textContent = '回答正确 ✓';
+                statusEl.className = 'result-value correct';
+            } else {
+                statusEl.textContent = '回答错误 ✗';
+                statusEl.className = 'result-value incorrect';
+            }
+        }
+        
+        // 清空结果区域（隐藏答题结果行，恢复当前题目显示）
+        function hideResultSection() {
+            document.getElementById('answerResultRow').style.display = 'none';
+            document.getElementById('correctAnswerRow').style.display = 'none';
+            document.getElementById('answerStatusRow').style.display = 'none';
+            document.getElementById('questionInfoTitle').textContent = '当前题目';
+        }
+        
+        // 初始化用户
+        initUser();
+    </script>
+</body>
+</html>
