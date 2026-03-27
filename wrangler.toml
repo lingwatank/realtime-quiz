@@ -1,25 +1,15 @@
-name = "onlinexame"
+name = "realtime-quiz"
 main = "src/index.js"
 compatibility_date = "2025-07-18"
 
 # ⚠️ 重要：ADMIN_API_KEY 必须通过 wrangler secret put ADMIN_API_KEY 设置
 # 不要在此处硬编码 API Key！
 
-# KV 命名空间绑定
+# KV 命名空间绑定（自动创建）
 [[kv_namespaces]]
 binding = "EXAM_KV"
-id = "8a830a95a9594a908e7e902b29c1f4e9"
-preview_id = "7b8e7d8a5b874a8d9e8f7a6b5c4d3e2f"
 
 # 静态资源绑定 - Workers Assets
 [assets]
 binding = "ASSETS"
 directory = "./public"
-
-# 开发环境配置
-[env.dev]
-name = "onlinexame-dev"
-
-# 生产环境配置
-[env.production]
-name = "onlinexame"
