@@ -116,4 +116,13 @@ export default class KVStore {
     await this.setCounter(key, newValue);
     return newValue;
   }
+
+  // 题库相关操作
+  async getQuestionBank() {
+    return await this.get('question_bank', { version: '1.0', count: 0, questions: [] });
+  }
+
+  async saveQuestionBank(bank) {
+    return await this.put('question_bank', bank);
+  }
 }

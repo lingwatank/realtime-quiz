@@ -2,15 +2,14 @@ name = "onlinexame"
 main = "src/index.js"
 compatibility_date = "2025-07-18"
 
-# 环境变量
-[vars]
-ADMIN_API_KEY = "F7C9A8F491009BBB736DEA2AEC92E5E86E8E986E1CDF59D164129003895DC6EC"
+# ⚠️ 重要：ADMIN_API_KEY 必须通过 wrangler secret put ADMIN_API_KEY 设置
+# 不要在此处硬编码 API Key！
 
 # KV 命名空间绑定
 [[kv_namespaces]]
 binding = "EXAM_KV"
-id = "exam_kv_namespace"
-preview_id = "exam_kv_namespace_preview"
+id = "8a830a95a9594a908e7e902b29c1f4e9"
+preview_id = "7b8e7d8a5b874a8d9e8f7a6b5c4d3e2f"
 
 # 静态资源绑定 - Workers Assets
 [assets]

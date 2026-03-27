@@ -156,161 +156,157 @@
         let currentExportData = null;
         let currentExportFilename = '';
 
-        // 加载数据概览
-        async function loadOverview() {
+        // 缓存数据
+        let cachedData = null;
+
+        // 统一加载所有数据（优化：一次请求获取所有数据）
+        async function loadAllData() {
             try {
-                const response = await fetch('/api/data?type=stats', {
+                const response = await fetch('/api/data?type=all', {
                     headers: { 'Authorization': 'Bearer ' + adminToken }
                 });
                 const result = await response.json();
+
                 if (result.success) {
-                    document.getElementById('totalQuestions').textContent = result.data.stats.totalQuestions;
-                    document.getElementById('totalRecords').textContent = result.data.stats.totalSubmissions;
-                    document.getElementById('totalParticipants').textContent = result.data.stats.totalParticipants;
+                    cachedData = result.data;
+                    updateOverview(result.data.stats);
+                    updateQuestions(result.data.questions);
+                    updateHistory(result.data.questionHistory);
+                    updateRecords(result.data.participants);
                 }
             } catch (error) {
-                console.error('加载概览失败:', error);
-            }
-        }
-
-        // 加载题目列表
-        async function loadQuestions() {
-            try {
-                const response = await fetch('/api/data?type=questions', {
-                    headers: { 'Authorization': 'Bearer ' + adminToken }
-                });
-                const result = await response.json();
-                const container = document.getElementById('questionsContainer');
-                
-                if (result.success && result.data.questions && result.data.questions.length > 0) {
-                    container.innerHTML = `
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>题目内容</th>
-                                    <th>正确答案</th>
-                                    <th>提交数</th>
-                                    <th>正确数</th>
-                                    <th>状态</th>
-                                    <th>创建时间</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${result.data.questions.map(q => {
-                                    const status = q.expired ? '<span class="badge badge-danger">已过期</span>' : 
-                                                  (q.expiresAt ? '<span class="badge badge-success">进行中</span>' : '<span class="badge badge-info">永久有效</span>');
-                                    return `
-                                        <tr>
-                                            <td>${q.id}</td>
-                                            <td>${q.text.substring(0, 50)}${q.text.length > 50 ? '...' : ''}</td>
-                                            <td>${q.correctAnswer}</td>
-                                            <td>${q.totalSubmissions || 0}</td>
-                                            <td>${q.correctCount || 0}</td>
-                                            <td>${status}</td>
-                                            <td>${new Date(q.createdAt).toLocaleString()}</td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    `;
-                } else {
-                    container.innerHTML = '<div class="empty-state">暂无题目数据</div>';
-                }
-            } catch (error) {
+                console.error('加载数据失败:', error);
                 document.getElementById('questionsContainer').innerHTML = '<div class="empty-state">加载失败</div>';
-            }
-        }
-
-        // 加载历史题目
-        async function loadHistoryQuestions() {
-            try {
-                const response = await fetch('/api/data?type=history', {
-                    headers: { 'Authorization': 'Bearer ' + adminToken }
-                });
-                const result = await response.json();
-                const container = document.getElementById('historyContainer');
-
-                if (result.success && result.data.questionHistory && result.data.questionHistory.length > 0) {
-                    container.innerHTML = `
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>题目内容</th>
-                                    <th>正确答案</th>
-                                    <th>提交数</th>
-                                    <th>正确数</th>
-                                    <th>正确率</th>
-                                    <th>创建时间</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${result.data.questionHistory.map(q => {
-                                    const correctRate = q.totalSubmissions > 0
-                                        ? ((q.correctCount / q.totalSubmissions) * 100).toFixed(1) + '%'
-                                        : '0.0%';
-                                    return `
-                                        <tr>
-                                            <td>${q.id}</td>
-                                            <td>${q.text.substring(0, 50)}${q.text.length > 50 ? '...' : ''}</td>
-                                            <td>${q.correctAnswer}</td>
-                                            <td>${q.totalSubmissions || 0}</td>
-                                            <td>${q.correctCount || 0}</td>
-                                            <td>${correctRate}</td>
-                                            <td>${new Date(q.createdAt).toLocaleString()}</td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    `;
-                } else {
-                    container.innerHTML = '<div class="empty-state">暂无历史题目</div>';
-                }
-            } catch (error) {
                 document.getElementById('historyContainer').innerHTML = '<div class="empty-state">加载失败</div>';
+                document.getElementById('recordsContainer').innerHTML = '<div class="empty-state">加载失败</div>';
             }
         }
 
-        // 加载答题记录
-        async function loadRecords() {
-            try {
-                const response = await fetch('/api/data?type=stats');
-                const result = await response.json();
-                const container = document.getElementById('recordsContainer');
-                
-                if (result.success && result.data.participants && result.data.participants.length > 0) {
-                    container.innerHTML = `
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>昵称</th>
-                                    <th>答题数</th>
-                                    <th>正确数</th>
-                                    <th>正确率</th>
-                                    <th>最后提交</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${result.data.participants.map(p => `
+        // 更新概览
+        function updateOverview(stats) {
+            if (stats) {
+                document.getElementById('totalQuestions').textContent = stats.totalQuestions || 0;
+                document.getElementById('totalRecords').textContent = stats.totalSubmissions || 0;
+                document.getElementById('totalParticipants').textContent = stats.totalParticipants || 0;
+            }
+        }
+
+        // 更新题目列表
+        function updateQuestions(questions) {
+            const container = document.getElementById('questionsContainer');
+
+            if (questions && questions.length > 0) {
+                container.innerHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>题目内容</th>
+                                <th>正确答案</th>
+                                <th>提交数</th>
+                                <th>正确数</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${questions.map(q => {
+                                const status = q.expired ? '<span class="badge badge-danger">已过期</span>' :
+                                              (q.expiresAt ? '<span class="badge badge-success">进行中</span>' : '<span class="badge badge-info">永久有效</span>');
+                                return `
                                     <tr>
-                                        <td>${p.nickname}</td>
-                                        <td>${p.totalAnswers}</td>
-                                        <td>${p.correctCount}</td>
-                                        <td>${p.correctRate}</td>
-                                        <td>${new Date(p.lastSubmitAt).toLocaleString()}</td>
+                                        <td>${q.id}</td>
+                                        <td>${q.text.substring(0, 50)}${q.text.length > 50 ? '...' : ''}</td>
+                                        <td>${q.correctAnswer}</td>
+                                        <td>${q.totalSubmissions || 0}</td>
+                                        <td>${q.correctCount || 0}</td>
+                                        <td>${status}</td>
+                                        <td>${new Date(q.createdAt).toLocaleString()}</td>
                                     </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    `;
-                } else {
-                    container.innerHTML = '<div class="empty-state">暂无答题记录</div>';
-                }
-            } catch (error) {
-                document.getElementById('recordsContainer').innerHTML = '<div class="empty-state">加载失败</div>';
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                container.innerHTML = '<div class="empty-state">暂无题目数据</div>';
+            }
+        }
+
+        // 更新历史题目
+        function updateHistory(questionHistory) {
+            const container = document.getElementById('historyContainer');
+
+            if (questionHistory && questionHistory.length > 0) {
+                container.innerHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>题目内容</th>
+                                <th>正确答案</th>
+                                <th>提交数</th>
+                                <th>正确数</th>
+                                <th>正确率</th>
+                                <th>创建时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${questionHistory.map(q => {
+                                const correctRate = q.totalSubmissions > 0
+                                    ? ((q.correctCount / q.totalSubmissions) * 100).toFixed(1) + '%'
+                                    : '0.0%';
+                                return `
+                                    <tr>
+                                        <td>${q.id}</td>
+                                        <td>${q.text.substring(0, 50)}${q.text.length > 50 ? '...' : ''}</td>
+                                        <td>${q.correctAnswer}</td>
+                                        <td>${q.totalSubmissions || 0}</td>
+                                        <td>${q.correctCount || 0}</td>
+                                        <td>${correctRate}</td>
+                                        <td>${new Date(q.createdAt).toLocaleString()}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                container.innerHTML = '<div class="empty-state">暂无历史题目</div>';
+            }
+        }
+
+        // 更新答题记录
+        function updateRecords(participants) {
+            const container = document.getElementById('recordsContainer');
+
+            if (participants && participants.length > 0) {
+                container.innerHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>昵称</th>
+                                <th>答题数</th>
+                                <th>正确数</th>
+                                <th>正确率</th>
+                                <th>最后提交</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${participants.map(p => `
+                                <tr>
+                                    <td>${p.nickname}</td>
+                                    <td>${p.totalAnswers}</td>
+                                    <td>${p.correctCount}</td>
+                                    <td>${p.correctRate}</td>
+                                    <td>${new Date(p.lastSubmitAt).toLocaleString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                container.innerHTML = '<div class="empty-state">暂无答题记录</div>';
             }
         }
 
@@ -421,9 +417,7 @@
                 const result = await response.json();
                 if (result.success) {
                     alert(result.message || '已清空所有题目');
-                    loadOverview();
-                    loadQuestions();
-                    loadHistoryQuestions();
+                    loadAllData();
                 } else {
                     alert('清空失败: ' + result.message);
                 }
@@ -447,8 +441,7 @@
                 const result = await response.json();
                 if (result.success) {
                     alert('已清空所有答题记录');
-                    loadOverview();
-                    loadRecords();
+                    loadAllData();
                 } else {
                     alert('清空失败: ' + result.message);
                 }
@@ -475,11 +468,8 @@
             });
         });
 
-        // 初始化
-        loadOverview();
-        loadQuestions();
-        loadHistoryQuestions();
-        loadRecords();
+        // 初始化（一次请求获取所有数据）
+        loadAllData();
     </script>
 </body>
 </html>

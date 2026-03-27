@@ -152,6 +152,39 @@ export default class QuestionUpload {
     };
   }
 
+  // 将当前题目归档到历史（隐藏当前题目）
+  async archiveCurrentQuestion() {
+    await this.ensureInitialized();
+    
+    if (this.questions.length === 0) {
+      return {
+        success: false,
+        message: '当前没有题目可归档'
+      };
+    }
+    
+    // 获取当前题目
+    const currentQuestion = this.questions[0];
+    
+    // 标记为已过期
+    currentQuestion.expiresAt = new Date().toISOString();
+    currentQuestion.expired = true;
+    
+    // 移到历史记录开头
+    this.questionHistory.unshift(currentQuestion);
+    await this.kvStore.saveQuestionHistory(this.questionHistory);
+    
+    // 清空当前题目
+    this.questions = [];
+    await this.kvStore.saveQuestions(this.questions);
+    
+    return {
+      success: true,
+      archived: currentQuestion,
+      message: '题目已归档到历史'
+    };
+  }
+
   // 删除所有题目（包括当前题目和历史题目）
   async deleteAllQuestions() {
     await this.ensureInitialized();

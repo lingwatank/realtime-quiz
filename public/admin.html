@@ -17,15 +17,7 @@
         .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease; }
         .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #3498db; }
         .form-group textarea { resize: vertical; min-height: 100px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        .option-input { display: flex; gap: 10px; align-items: center; }
-        .option-input .option-label { width: 36px; height: 36px; border-radius: 50%; background-color: #e0e0e0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: #555; }
-        .option-input input { flex: 1; }
-        .correct-answer-grid { display: flex; gap: 10px; margin-top: 10px; }
-        .correct-btn { flex: 1; padding: 15px; border: 2px solid #e0e0e0; border-radius: 8px; background-color: white; cursor: pointer; font-size: 18px; font-weight: 700; transition: all 0.3s ease; }
-        .correct-btn:hover { border-color: #3498db; background-color: #f8f9fa; }
-        .correct-btn.selected { border-color: #27ae60; background-color: #27ae60; color: white; }
+
         .btn-group { display: flex; gap: 10px; margin-top: 20px; }
         .push-btn { flex: 1; padding: 16px; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: 600; cursor: pointer; transition: background-color 0.3s ease; }
         .push-btn:hover { background-color: #2980b9; }
@@ -92,6 +84,28 @@
         .nav-links a { color: #3498db; text-decoration: none; margin: 0 10px; }
         .hint { font-size: 12px; color: #7f8c8d; margin-top: 5px; }
         
+        /* 推送表单紧凑样式 */
+        .push-form-content { max-height: 600px; overflow: hidden; transition: max-height 0.3s ease-out, opacity 0.2s ease; opacity: 1; }
+        .push-form-content.collapsed { max-height: 0; opacity: 0; }
+        .compact-form { padding-top: 10px; }
+        .compact-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: stretch; }
+        .compact-row.single-row { flex-direction: column; }
+        .question-input { flex: 1; padding: 10px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; min-width: 0; box-sizing: border-box; }
+        .question-input.full-width { width: 100%; }
+        .duration-select { display: flex; align-items: center; gap: 8px; }
+        .duration-select.full-width { width: 100%; justify-content: flex-start; }
+        .duration-select input { width: 120px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; text-align: center; }
+        .duration-label { font-size: 13px; color: #7f8c8d; }
+        .options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .option-item { display: flex; align-items: center; gap: 8px; padding: 8px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; background: white; }
+        .option-item:hover { border-color: #3498db; }
+        .option-item.selected { border-color: #27ae60; background-color: #f0fff4; }
+        .option-letter { width: 28px; height: 28px; border-radius: 50%; background-color: #e0e0e0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #555; flex-shrink: 0; transition: all 0.2s ease; cursor: pointer; user-select: none; }
+        .option-item.selected .option-letter { background-color: #27ae60; color: white; }
+        .option-item input { flex: 1; border: none; background: transparent; font-size: 14px; padding: 0; outline: none; }
+        .push-action { text-align: center; }
+        .push-action .push-btn { width: 100%; max-width: 400px; padding: 12px; font-size: 16px; }
+        
         /* 移动端优化 */
         @media (max-width: 768px) { 
             .container { padding: 12px; } 
@@ -105,13 +119,7 @@
             .stat-card { padding: 15px 10px; }
             .stat-value { font-size: 24px; }
             .stat-label { font-size: 12px; }
-            .form-row { grid-template-columns: 1fr; gap: 10px; } 
-            .options-grid { grid-template-columns: 1fr; gap: 10px; }
-            .option-input { gap: 8px; }
-            .option-input .option-label { width: 32px; height: 32px; font-size: 14px; }
-            .correct-answer-grid { gap: 8px; }
-            .correct-btn { padding: 12px 8px; font-size: 16px; }
-            .btn-group { flex-direction: column; gap: 10px; margin-top: 15px; } 
+            .btn-group { flex-direction: column; gap: 10px; margin-top: 15px; }
             .push-btn { padding: 16px; font-size: 16px; }
             .delete-btn { padding: 14px; font-size: 14px; }
             .question-stats-grid { grid-template-columns: 1fr; gap: 15px; }
@@ -120,13 +128,20 @@
             .nav-links { font-size: 14px; }
             .nav-links a { margin: 0 5px; }
             .alert { padding: 12px; font-size: 14px; }
+            
+            /* 推送表单移动端优化 - 窄屏1x4布局 */
+            .options-container { grid-template-columns: 1fr; }
+            .compact-row.single-row { flex-direction: column; }
+            .question-input { width: 100%; }
+            .duration-select.full-width { width: 100%; }
+            .duration-select input { width: 100px; flex-shrink: 0; }
+            .push-action .push-btn { width: 100%; max-width: none; padding: 14px; }
         }
         
         /* 小屏幕手机优化 */
         @media (max-width: 375px) {
             .header h1 { font-size: 20px; }
             .stats-grid { grid-template-columns: 1fr; }
-            .correct-btn { padding: 10px 6px; font-size: 14px; }
         }
     </style>
 </head>
@@ -142,78 +157,82 @@
         <!-- 当前题目状态 -->
         <div class="control-section">
             <div class="control-title">当前题目状态</div>
-            <div id="currentQuestionDisplay" class="current-question empty">
-                <div class="current-question-title">当前状态</div>
-                <div class="current-question-content" id="currentQuestionText">暂无题目</div>
-                <div class="current-question-options" id="currentQuestionOptions" style="display: none;"></div>
-                <div class="current-question-answer" id="currentQuestionAnswer" style="display: none;"></div>
-                <div class="current-question-status" id="currentQuestionStatus"></div>
+            <div id="currentQuestionCard">
+                <!-- 动态内容 -->
             </div>
-            <button class="delete-btn" id="deleteBtn" onclick="deleteCurrentQuestion()" disabled>删除当前题目</button>
         </div>
-        
-        <!-- 推送新题目 -->
+
+        <!-- 题库推送管理 -->
         <div class="control-section">
-            <div class="control-title">推送新题目（ABCD单选）</div>
-            
-            <!-- 提示框 -->
-            <div id="alertBox" class="alert">
-                <div id="alertMessage"></div>
-                <div id="alertActions" class="alert-actions" style="display: none;">
-                    <button class="alert-btn alert-btn-confirm" onclick="forcePush()">强制覆盖</button>
-                    <button class="alert-btn alert-btn-cancel" onclick="hideAlert()">取消</button>
+            <div class="control-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>题库推送管理</span>
+                <span id="bankCount" style="font-size: 14px; color: #7f8c8d;">0 题</span>
+            </div>
+            <div id="questionBankContainer">
+                <div style="text-align: center; padding: 20px; color: #7f8c8d;">
+                    <div style="font-size: 14px; margin-bottom: 15px;">暂无题库数据</div>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button class="push-btn" style="padding: 10px 20px; font-size: 14px;" onclick="importQuestionBank()">导入JSON题库</button>
+                        <button class="delete-btn" style="padding: 10px 20px; font-size: 14px;" onclick="clearQuestionBank()" id="clearBankBtn" style="display: none;">清空题库</button>
+                    </div>
+                    <input type="file" id="bankFileInput" accept=".json" style="display: none;" onchange="handleBankFileSelect(event)">
                 </div>
             </div>
-            
-            <div class="form-group">
-                <label for="questionText">题目内容</label>
-                <textarea id="questionText" placeholder="请输入题目内容"></textarea>
+        </div>
+
+        <!-- 推送新题目 -->
+        <div class="control-section" id="pushSection">
+            <div class="control-title" onclick="togglePushSection()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                <span>推送新题目</span>
+                <span id="pushToggleIcon" style="font-size: 14px; color: #7f8c8d;">▼</span>
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="durationSeconds">答题时长（秒）</label>
-                    <input type="number" id="durationSeconds" min="1" max="3600" value="10" placeholder="例如：10">
-                    <div class="hint">设置题目有效期（秒），默认10秒，0或留空表示无限制</div>
-                </div>
-                <div class="form-group">
-                    <label>正确答案</label>
-                    <div class="correct-answer-grid">
-                        <button class="correct-btn" data-answer="A" onclick="selectCorrect('A')">A</button>
-                        <button class="correct-btn" data-answer="B" onclick="selectCorrect('B')">B</button>
-                        <button class="correct-btn" data-answer="C" onclick="selectCorrect('C')">C</button>
-                        <button class="correct-btn" data-answer="D" onclick="selectCorrect('D')">D</button>
+
+            <div id="pushFormContent" class="push-form-content">
+                <!-- 提示框 -->
+                <div id="alertBox" class="alert">
+                    <div id="alertMessage"></div>
+                    <div id="alertActions" class="alert-actions" style="display: none;">
+                        <button class="alert-btn alert-btn-confirm" onclick="forcePush()">强制覆盖</button>
+                        <button class="alert-btn alert-btn-cancel" onclick="hideAlert()">取消</button>
                     </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>选项内容</label>
-                <div class="options-grid">
-                    <div class="option-input"><div class="option-label">A</div><input type="text" id="optA" placeholder="选项 A 内容"></div>
-                    <div class="option-input"><div class="option-label">B</div><input type="text" id="optB" placeholder="选项 B 内容"></div>
-                    <div class="option-input"><div class="option-label">C</div><input type="text" id="optC" placeholder="选项 C 内容"></div>
-                    <div class="option-input"><div class="option-label">D</div><input type="text" id="optD" placeholder="选项 D 内容"></div>
+
+                <!-- 紧凑表单 -->
+                <div class="compact-form">
+                    <div class="compact-row single-row">
+                        <input type="text" id="questionText" placeholder="输入题目内容" class="question-input full-width">
+                    </div>
+                    <div class="compact-row single-row">
+                        <div class="duration-select full-width">
+                            <span class="duration-label">答题时长：</span>
+                            <input type="number" id="durationSeconds" min="1" max="3600" placeholder="10" title="答题时长（秒），默认10秒">
+                            <span class="duration-label">秒（默认10秒）</span>
+                        </div>
+                    </div>
+
+                    <div class="options-container">
+                        <div class="option-item" id="optionA" onclick="focusOptionInput('optA')">
+                            <span class="option-letter" onclick="event.stopPropagation(); selectCorrect('A')">A</span>
+                            <input type="text" id="optA" placeholder="选项A" onclick="event.stopPropagation()">
+                        </div>
+                        <div class="option-item" id="optionB" onclick="focusOptionInput('optB')">
+                            <span class="option-letter" onclick="event.stopPropagation(); selectCorrect('B')">B</span>
+                            <input type="text" id="optB" placeholder="选项B" onclick="event.stopPropagation()">
+                        </div>
+                        <div class="option-item" id="optionC" onclick="focusOptionInput('optC')">
+                            <span class="option-letter" onclick="event.stopPropagation(); selectCorrect('C')">C</span>
+                            <input type="text" id="optC" placeholder="选项C" onclick="event.stopPropagation()">
+                        </div>
+                        <div class="option-item" id="optionD" onclick="focusOptionInput('optD')">
+                            <span class="option-letter" onclick="event.stopPropagation(); selectCorrect('D')">D</span>
+                            <input type="text" id="optD" placeholder="选项D" onclick="event.stopPropagation()">
+                        </div>
+                    </div>
+
+                    <div class="push-action">
+                        <button class="push-btn" id="pushBtn" onclick="pushQuestion()">推送</button>
+                    </div>
                 </div>
-            </div>
-            <div class="btn-group">
-                <button class="push-btn" id="pushBtn" onclick="pushQuestion()">推送到客户端</button>
-            </div>
-        </div>
-        
-        <div class="stats-section">
-            <div class="stats-title">答题数据统计</div>
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-value" id="totalQuestions">-</div><div class="stat-label">总题目数</div></div>
-                <div class="stat-card"><div class="stat-value" id="totalSubmissions">-</div><div class="stat-label">总提交数</div></div>
-                <div class="stat-card"><div class="stat-value" id="correctRate">-</div><div class="stat-label">正确率</div></div>
-                <div class="stat-card"><div class="stat-value" id="totalParticipants">-</div><div class="stat-label">参与者人数</div></div>
-            </div>
-        </div>
-        
-        <!-- 题目答题统计 -->
-        <div class="stats-section">
-            <div class="stats-title">题目答题统计</div>
-            <div id="questionStatsContainer" class="question-stats-grid">
-                <div class="question-stat-empty">暂无题目数据</div>
             </div>
         </div>
     </div>
@@ -226,11 +245,61 @@
 
         let selectedCorrectAnswer = null;
         let pendingQuestionData = null;
-        
+        let isPushSectionCollapsed = true;
+
+        // HTML 转义函数（防止 XSS）
+        function escapeHtml(text) {
+            if (typeof text !== 'string') return text;
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 折叠/展开推送区域
+        function togglePushSection() {
+            const content = document.getElementById('pushFormContent');
+            const icon = document.getElementById('pushToggleIcon');
+            isPushSectionCollapsed = !isPushSectionCollapsed;
+
+            if (isPushSectionCollapsed) {
+                content.classList.add('collapsed');
+                icon.textContent = '▶';
+            } else {
+                content.classList.remove('collapsed');
+                icon.textContent = '▼';
+            }
+        }
+
+        // 设置推送区域折叠状态（不切换）
+        function setPushSectionCollapsed(collapsed) {
+            const content = document.getElementById('pushFormContent');
+            const icon = document.getElementById('pushToggleIcon');
+            isPushSectionCollapsed = collapsed;
+
+            if (isPushSectionCollapsed) {
+                content.classList.add('collapsed');
+                icon.textContent = '▶';
+            } else {
+                content.classList.remove('collapsed');
+                icon.textContent = '▼';
+            }
+        }
+
+        // 聚焦到选项输入框
+        function focusOptionInput(inputId) {
+            document.getElementById(inputId).focus();
+        }
+
+        // 选择正确答案（通过点击选项字母）
         function selectCorrect(answer) {
             selectedCorrectAnswer = answer;
-            document.querySelectorAll('.correct-btn').forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.answer === answer);
+
+            // 更新选项样式
+            ['A', 'B', 'C', 'D'].forEach(letter => {
+                const item = document.getElementById('option' + letter);
+                if (item) {
+                    item.classList.toggle('selected', letter === answer);
+                }
             });
         }
         
@@ -251,7 +320,8 @@
         
         async function pushQuestion(force = false) {
             const text = document.getElementById('questionText').value;
-            const durationSeconds = parseInt(document.getElementById('durationSeconds').value) || 0;
+            const durationInput = document.getElementById('durationSeconds').value;
+            const durationSeconds = durationInput ? parseInt(durationInput) : 10; // 默认10秒
             
             const options = [
                 { letter: 'A', text: document.getElementById('optA').value || '选项A' },
@@ -350,11 +420,11 @@
             }
         }
         
-        async function deleteCurrentQuestion() {
-            if (!confirm('确定要删除当前题目吗？')) {
+        async function archiveCurrentQuestion() {
+            if (!confirm('确定要结束当前题目并归档到历史吗？')) {
                 return;
             }
-            
+
             try {
                 const response = await fetch('/api/action', {
                     method: 'POST',
@@ -362,18 +432,18 @@
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + adminToken
                     },
-                    body: JSON.stringify({ action: 'deleteQuestion' })
+                    body: JSON.stringify({ action: 'archiveQuestion' })
                 });
                 const result = await response.json();
-                
+
                 if (result.success) {
                     showAlert(result.message, 'success');
                     loadAllData();
                 } else {
-                    showAlert(result.message || '删除失败', 'danger');
+                    showAlert(result.message || '归档失败', 'danger');
                 }
             } catch (error) {
-                showAlert('删除失败: ' + error.message, 'danger');
+                showAlert('归档失败: ' + error.message, 'danger');
             }
         }
         
@@ -383,9 +453,12 @@
             document.getElementById('optB').value = '';
             document.getElementById('optC').value = '';
             document.getElementById('optD').value = '';
-            document.getElementById('durationSeconds').value = '10';
+            document.getElementById('durationSeconds').value = ''; // 清空，显示placeholder
             selectedCorrectAnswer = null;
-            document.querySelectorAll('.correct-btn').forEach(btn => btn.classList.remove('selected'));
+            ['A', 'B', 'C', 'D'].forEach(letter => {
+                const item = document.getElementById('option' + letter);
+                if (item) item.classList.remove('selected');
+            });
         }
         
         // 聚合加载所有数据（使用轻量级API）
@@ -399,86 +472,148 @@
                 if (result.success) {
                     const data = result.data;
                     
-                    // 更新统计面板
-                    if (data.stats) {
-                        document.getElementById('totalQuestions').textContent = data.stats.totalQuestions;
-                        document.getElementById('totalSubmissions').textContent = data.stats.totalSubmissions;
-                        document.getElementById('correctRate').textContent = data.stats.correctRate;
-                        document.getElementById('totalParticipants').textContent = data.stats.totalParticipants;
-                    }
-                    
-                    // 更新当前题目显示（取最新的题目）
+                    // 更新当前题目显示（取最新的题目，包含正确率）
                     updateCurrentQuestionDisplay(data.questions);
-                    
-                    // 更新题目统计卡片
-                    updateQuestionStatsCards(data.questions);
                 }
             } catch (error) {
                 console.error('加载数据失败:', error);
             }
         }
         
-        // 更新当前题目显示
+        // 定时器管理
+        let countdownTimer = null;
+        let refreshTimer = null;
+        let currentQuestion = null;
+        const REFRESH_INTERVAL_ACTIVE = 5000;    // 有活跃题目时：5秒
+        const REFRESH_INTERVAL_INACTIVE = 60000; // 无题目或已过期：60秒
+
+        // 更新当前题目显示（卡片样式）
         function updateCurrentQuestionDisplay(questions) {
-            const displayDiv = document.getElementById('currentQuestionDisplay');
-            const textDiv = document.getElementById('currentQuestionText');
-            const optionsDiv = document.getElementById('currentQuestionOptions');
-            const answerDiv = document.getElementById('currentQuestionAnswer');
-            const statusDiv = document.getElementById('currentQuestionStatus');
-            const deleteBtn = document.getElementById('deleteBtn');
-            
+            const cardDiv = document.getElementById('currentQuestionCard');
+
+            // 清除之前的倒计时定时器
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+
             if (questions && questions.length > 0) {
-                // 获取最新题目（按创建时间排序）
-                const q = questions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-                
-                // 显示完整题目内容
-                textDiv.textContent = q.text;
-                
-                // 显示选项
-                if (q.options && q.options.length > 0) {
-                    optionsDiv.innerHTML = q.options.map(opt => 
-                        '<div class="current-question-option"><span class="opt-letter">' + opt.letter + '.</span> ' + opt.text + '</div>'
-                    ).join('');
-                    optionsDiv.style.display = 'block';
-                } else {
-                    optionsDiv.style.display = 'none';
-                }
-                
-                // 显示正确答案
-                if (q.correctAnswer) {
-                    answerDiv.textContent = '正确答案: ' + q.correctAnswer;
-                    answerDiv.style.display = 'block';
-                } else {
-                    answerDiv.style.display = 'none';
-                }
-                
-                // 检查是否过期
+                // 获取最新题目
+                currentQuestion = questions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+                const q = currentQuestion;
+
+                // 检查状态
                 const now = new Date().getTime();
                 const expireTime = q.expiresAt ? new Date(q.expiresAt).getTime() : null;
                 const isExpired = q.expired || (expireTime && now > expireTime);
-                
-                if (isExpired) {
-                    displayDiv.className = 'current-question expired';
-                    statusDiv.innerHTML = '<span class="status-expired">已过期</span>';
-                    deleteBtn.disabled = false;
-                } else if (q.expiresAt) {
-                    const remainingSeconds = Math.ceil((expireTime - now) / 1000);
-                    displayDiv.className = 'current-question active';
-                    statusDiv.innerHTML = '<span class="status-active">进行中 - 剩余 ' + remainingSeconds + ' 秒</span>';
-                    deleteBtn.disabled = false;
-                } else {
-                    displayDiv.className = 'current-question active';
-                    statusDiv.innerHTML = '<span class="status-active">进行中 - 无时间限制</span>';
-                    deleteBtn.disabled = false;
+                const hasTimeLimit = !!q.expiresAt;
+                const isActive = !isExpired;
+
+                // 计算正确率和答对人数
+                const correctCount = q.correctCount || 0;
+                const totalSubmissions = q.totalSubmissions || 0;
+                const correctRate = totalSubmissions > 0
+                    ? ((correctCount / totalSubmissions) * 100).toFixed(1) + '%'
+                    : '-';
+
+                // 根据状态调整刷新频率
+                updateRefreshInterval(isActive);
+
+                // 状态样式和文字
+                const statusText = isExpired ? '已结束' : '进行中';
+
+                // 渲染简化卡片（包含正确率）
+                cardDiv.innerHTML = `
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 12px 15px; border-left: 3px solid ${isExpired ? '#95a5a6' : '#27ae60'};">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 13px; color: #7f8c8d;">#${q.id}</span>
+                            <span style="font-size: 12px; padding: 2px 8px; border-radius: 10px; background: ${isExpired ? '#e9ecef' : '#d4edda'}; color: ${isExpired ? '#6c757d' : '#155724'};">${statusText}</span>
+                        </div>
+                        <div style="font-size: 14px; color: #2c3e50; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(q.text) || '无题目内容'}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 12px; color: #27ae60;">答案 ${escapeHtml(q.correctAnswer) || '-'}</span>
+                            <span style="font-size: 12px; color: #3498db;">${q.totalSubmissions || 0}人参与</span>
+                            ${hasTimeLimit && !isExpired ? `<span style="font-size: 12px; color: #e74c3c;" id="countdownDisplay"><span class="countdown-value">--</span>s</span>` : ''}
+                        </div>
+                        <div style="display: flex; justify-content: center; align-items: center; padding-top: 8px; border-top: 1px solid #e9ecef; gap: 15px;">
+                            <span style="font-size: 12px; color: #7f8c8d;">答对 <span style="color: #27ae60; font-weight: 600;">${correctCount}</span> 人</span>
+                            <span style="font-size: 12px; color: #bdc3c7;">|</span>
+                            <span style="font-size: 12px; color: #7f8c8d;">正确率 <span style="color: #3498db; font-weight: 600;">${correctRate}</span></span>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <button class="delete-btn" style="padding: 8px 20px; font-size: 13px;" onclick="archiveCurrentQuestion()">结束并归档</button>
+                    </div>
+                `;
+
+                // 启动倒计时
+                if (hasTimeLimit && !isExpired) {
+                    startCountdown(expireTime);
                 }
             } else {
-                displayDiv.className = 'current-question empty';
-                textDiv.textContent = '暂无题目';
-                optionsDiv.style.display = 'none';
-                answerDiv.style.display = 'none';
-                statusDiv.textContent = '';
-                deleteBtn.disabled = true;
+                currentQuestion = null;
+                // 无题目时降低刷新频率
+                updateRefreshInterval(false);
+                cardDiv.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #7f8c8d; font-size: 14px;">
+                        暂无题目
+                    </div>
+                `;
             }
+        }
+
+        // 更新刷新频率
+        function updateRefreshInterval(isActive) {
+            const newInterval = isActive ? REFRESH_INTERVAL_ACTIVE : REFRESH_INTERVAL_INACTIVE;
+
+            // 如果定时器已存在且间隔相同，不重新设置
+            if (refreshTimer && currentRefreshInterval === newInterval) {
+                return;
+            }
+
+            // 清除旧定时器
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+            }
+
+            // 设置新定时器
+            currentRefreshInterval = newInterval;
+            refreshTimer = setInterval(loadAllData, newInterval);
+
+            console.log(`刷新频率已调整: ${isActive ? '5秒' : '60秒'}`);
+        }
+
+        // 当前刷新间隔（用于比较）
+        let currentRefreshInterval = null;
+
+        // 启动倒计时
+        function startCountdown(expireTime) {
+            const countdownEl = document.getElementById('countdownDisplay');
+            if (!countdownEl) return;
+
+            const valueEl = countdownEl.querySelector('.countdown-value');
+
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const remaining = Math.max(0, Math.ceil((expireTime - now) / 1000));
+
+                if (remaining > 0) {
+                    valueEl.textContent = remaining;
+                    // 少于10秒变红色
+                    if (remaining <= 10) {
+                        valueEl.style.color = '#e74c3c';
+                    }
+                } else {
+                    valueEl.textContent = '0';
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                    // 倒计时结束，刷新数据
+                    loadAllData();
+                }
+            }
+
+            updateCountdown();
+            countdownTimer = setInterval(updateCountdown, 1000);
         }
         
         // 更新题目统计卡片
@@ -525,9 +660,222 @@
             }
         }
         
-        // 页面加载时初始化（只调用一个聚合API）
+        // ==================== 题库管理功能 ====================
+        let questionBankData = null;
+        let currentBankIndex = -1;
+
+        // 导入题库 - 触发文件选择
+        function importQuestionBank() {
+            document.getElementById('bankFileInput').click();
+        }
+
+        // 处理文件选择
+        async function handleBankFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+
+                // 验证格式
+                if (!data.questions || !Array.isArray(data.questions)) {
+                    showAlert('JSON格式错误：需要包含 questions 数组', 'danger');
+                    return;
+                }
+
+                // 验证每道题
+                const validQuestions = data.questions.filter(q => {
+                    return q.id && q.text && q.options && q.correctAnswer;
+                });
+
+                if (validQuestions.length === 0) {
+                    showAlert('没有有效的题目数据', 'danger');
+                    return;
+                }
+
+                // 上传到服务器
+                const response = await fetch('/api/action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + adminToken
+                    },
+                    body: JSON.stringify({
+                        action: 'importQuestionBank',
+                        questions: validQuestions
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert(`成功导入 ${result.count} 道题目`, 'success');
+                    loadQuestionBank();
+                } else {
+                    showAlert(result.message || '导入失败', 'danger');
+                }
+            } catch (error) {
+                showAlert('文件读取失败: ' + error.message, 'danger');
+            }
+
+            // 清空文件输入
+            event.target.value = '';
+        }
+
+        // 加载题库
+        async function loadQuestionBank() {
+            try {
+                const response = await fetch('/api/action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + adminToken
+                    },
+                    body: JSON.stringify({ action: 'getQuestionBank' })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    questionBankData = result.data;
+                    renderQuestionBank();
+                }
+            } catch (error) {
+                console.error('加载题库失败:', error);
+            }
+        }
+
+        // 渲染题库列表（紧凑样式）
+        function renderQuestionBank() {
+            const container = document.getElementById('questionBankContainer');
+            const countEl = document.getElementById('bankCount');
+
+            const questions = questionBankData?.questions || [];
+            countEl.textContent = `${questions.length} 题`;
+
+            if (questions.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #7f8c8d;">
+                        <div style="font-size: 14px; margin-bottom: 15px;">暂无题库数据</div>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <button class="push-btn" style="padding: 10px 20px; font-size: 14px;" onclick="importQuestionBank()">导入JSON题库</button>
+                        </div>
+                        <input type="file" id="bankFileInput" accept=".json" style="display: none;" onchange="handleBankFileSelect(event)">
+                    </div>
+                `;
+                return;
+            }
+
+            // 紧凑列表样式
+            container.innerHTML = `
+                <div style="max-height: 400px; overflow-y: auto;">
+                    ${questions.map((q, index) => `
+                        <div style="display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #e0e0e0; ${index % 2 === 0 ? 'background: #f8f9fa;' : 'background: white;'} cursor: pointer;" onclick="fillQuestionToForm('${escapeHtml(q.id)}')" title="点击填充到推送表单">
+                            <span style="font-size: 12px; color: #7f8c8d; width: 60px; flex-shrink: 0;">#${escapeHtml(q.id)}</span>
+                            <span style="flex: 1; font-size: 14px; color: #2c3e50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 10px;">${escapeHtml(q.text)}</span>
+                            <span style="font-size: 12px; color: #27ae60; width: 50px; flex-shrink: 0; text-align: center;">答案${escapeHtml(q.correctAnswer)}</span>
+                            <span style="font-size: 12px; color: #7f8c8d; width: 60px; flex-shrink: 0; text-align: center;">${q.durationSeconds || 10}s</span>
+                            <button class="push-btn" style="padding: 6px 12px; font-size: 12px; flex-shrink: 0;" onclick="event.stopPropagation(); pushFromBank('${escapeHtml(q.id)}')">推送</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                    <button class="push-btn" style="padding: 10px 20px; font-size: 14px;" onclick="importQuestionBank()">重新导入</button>
+                    <button class="delete-btn" style="padding: 10px 20px; font-size: 14px;" onclick="clearQuestionBank()">清空题库</button>
+                </div>
+                <input type="file" id="bankFileInput" accept=".json" style="display: none;" onchange="handleBankFileSelect(event)">
+            `;
+        }
+
+        // 从题库推送题目
+        async function pushFromBank(questionId) {
+            try {
+                const response = await fetch('/api/action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + adminToken
+                    },
+                    body: JSON.stringify({
+                        action: 'pushFromBank',
+                        questionId: questionId
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('题目推送成功', 'success');
+                    loadAllData();
+                } else {
+                    showAlert(result.message || '推送失败', 'danger');
+                }
+            } catch (error) {
+                showAlert('推送失败: ' + error.message, 'danger');
+            }
+        }
+
+        // 将题库题目填充到推送表单
+        function fillQuestionToForm(questionId) {
+            const question = questionBankData?.questions?.find(q => q.id === questionId);
+            if (!question) return;
+
+            // 填充表单
+            document.getElementById('questionText').value = question.text;
+            document.getElementById('durationSeconds').value = question.durationSeconds || 10;
+
+            // 填充选项
+            question.options.forEach(opt => {
+                const input = document.getElementById('opt' + opt.letter);
+                if (input) {
+                    input.value = opt.text;
+                }
+            });
+
+            // 设置正确答案
+            selectCorrect(question.correctAnswer);
+
+            // 展开推送区域
+            setPushSectionCollapsed(false);
+
+            // 滚动到推送表单
+            document.getElementById('pushSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            showAlert('题目已填充到推送表单，请检查并点击推送', 'success');
+        }
+
+        // 清空题库
+        async function clearQuestionBank() {
+            if (!confirm('确定要清空整个题库吗？此操作不可恢复！')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + adminToken
+                    },
+                    body: JSON.stringify({ action: 'clearQuestionBank' })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    questionBankData = null;
+                    renderQuestionBank();
+                } else {
+                    showAlert(result.message || '清空失败', 'danger');
+                }
+            } catch (error) {
+                showAlert('清空失败: ' + error.message, 'danger');
+            }
+        }
+
+        // 页面加载时初始化
+        setPushSectionCollapsed(true); // 默认收起推送区域
         loadAllData();
-        setInterval(loadAllData, 5000);
+        loadQuestionBank();
+        updateRefreshInterval(false);
     </script>
 </body>
 </html>
