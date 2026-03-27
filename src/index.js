@@ -110,8 +110,19 @@ export default {
       return env.ASSETS.fetch(new URL('/login.html', request.url));
     }
 
+    // 根路径重定向到 /client
+    if (path === '/') {
+      return new Response(null, {
+        status: 302,
+        headers: {
+          'Location': '/client',
+          ...corsHeaders
+        }
+      });
+    }
+
     // 静态资源路由 - 从 public 目录提供
-    if (path === '/' || path === '/client' || path === '/client.html') {
+    if (path === '/client' || path === '/client.html') {
       return env.ASSETS.fetch(new URL('/client.html', request.url));
     }
 
