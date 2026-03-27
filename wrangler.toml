@@ -5,9 +5,12 @@ compatibility_date = "2025-07-18"
 # ⚠️ 重要：ADMIN_API_KEY 必须通过 wrangler secret put ADMIN_API_KEY 设置
 # 不要在此处硬编码 API Key！
 
-# KV 命名空间绑定（自动创建）
+# KV 命名空间绑定
+# 已在 Cloudflare Dashboard 中创建，名为 "EXAM_KV"
+# 如需查看 ID：npx wrangler kv:namespace list
 [[kv_namespaces]]
 binding = "EXAM_KV"
+id = "6248e2264b6f415d893ff2b4f7727b1b"
 
 # 静态资源绑定 - Workers Assets
 [assets]
