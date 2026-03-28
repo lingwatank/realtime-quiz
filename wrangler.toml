@@ -1,6 +1,6 @@
 name = "realtime-quiz"
 main = "src/index.js"
-compatibility_date = "2025-07-18"
+compatibility_date = "2026-03-27"
 
 # 禁用 workers.dev 子域名，仅允许通过自定义域名访问
 workers_dev = false
