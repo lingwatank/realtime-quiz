@@ -469,7 +469,7 @@ export default {
       }
 
       // 404 响应
-      return jsonResponse({ success: false, message: 'Not Found' }, 404);
+      return new Response(null, { status: 404 });
 
     } catch (error) {
       console.error('API Error:', error);
